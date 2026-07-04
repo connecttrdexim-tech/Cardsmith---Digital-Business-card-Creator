@@ -4,7 +4,7 @@ export default function DesignFields({ card, set }) {
   return (
     <>
       <ThemePicker value={card.theme} onChange={(theme) => set({ theme })} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-ink-700 mb-1.5">Accent color</label>
           <input type="color" value={card.accentColor} onChange={(e) => set({ accentColor: e.target.value })} className="w-full h-9 rounded-lg border border-ink-200" />

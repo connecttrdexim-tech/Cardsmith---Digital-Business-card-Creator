@@ -55,32 +55,34 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-paper">
       <header className="border-b border-ink-100 bg-white/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-ink-900 text-brass-300 flex items-center justify-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-ink-900 text-brass-300 flex items-center justify-center shrink-0">
               <CreditCard size={16} />
             </div>
-            <span className="font-display text-lg font-semibold text-ink-900">Cardsmith</span>
+            <span className="font-display text-lg font-semibold text-ink-900 truncate">Cardsmith</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <button
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-lg border border-ink-200 hover:bg-ink-50"
+              className="inline-flex items-center gap-1.5 text-sm font-medium px-2.5 sm:px-3.5 py-2 rounded-lg border border-ink-200 hover:bg-ink-50"
+              aria-label="Import JSON"
             >
-              <Upload size={15} /> Import JSON
+              <Upload size={15} /> <span className="hidden sm:inline">Import JSON</span>
             </button>
             <button
               onClick={createNew}
-              className="inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-lg bg-ink-900 text-white hover:bg-ink-800"
+              className="inline-flex items-center gap-1.5 text-sm font-medium px-2.5 sm:px-3.5 py-2 rounded-lg bg-ink-900 text-white hover:bg-ink-800"
+              aria-label="New card"
             >
-              <Plus size={15} /> New card
+              <Plus size={15} /> <span className="hidden sm:inline">New card</span>
             </button>
             <input ref={fileRef} type="file" accept="application/json" onChange={handleImport} className="hidden" />
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-5 py-10">
+      <main className="max-w-5xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
         {!loading && cards.length === 0 && (
           <div className="text-center py-24">
             <p className="font-display text-2xl text-ink-800 mb-2">No cards yet</p>
@@ -91,9 +93,9 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {cards.map((card) => (
-            <div key={card.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft hover:shadow-card transition-shadow">
+            <div key={card.id} className="rounded-2xl border border-ink-100 bg-white p-4 sm:p-5 shadow-soft hover:shadow-card transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-11 h-11 rounded-full bg-brass-100 text-brass-600 flex items-center justify-center font-semibold overflow-hidden shrink-0">
                   {card.profilePicture ? (
@@ -108,20 +110,20 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-xs text-ink-300 mb-4">Updated {new Date(card.updatedAt).toLocaleDateString()}</p>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 <button
                   onClick={() => navigate(`/editor/${card.id}`)}
                   className="flex-1 text-sm font-medium py-1.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800"
                 >
                   Edit
                 </button>
-                <button onClick={() => downloadJson(card)} className="p-1.5 rounded-lg border border-ink-200 hover:bg-ink-50" title="Download JSON">
+                <button onClick={() => downloadJson(card)} className="p-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 shrink-0" title="Download JSON">
                   <Download size={15} />
                 </button>
-                <button onClick={() => duplicate(card)} className="p-1.5 rounded-lg border border-ink-200 hover:bg-ink-50" title="Duplicate">
+                <button onClick={() => duplicate(card)} className="p-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 shrink-0" title="Duplicate">
                   <Copy size={15} />
                 </button>
-                <button onClick={() => remove(card.id)} className="p-1.5 rounded-lg border border-ink-200 text-red-500 hover:bg-red-50" title="Delete">
+                <button onClick={() => remove(card.id)} className="p-1.5 rounded-lg border border-ink-200 text-red-500 hover:bg-red-50 shrink-0" title="Delete">
                   <Trash2 size={15} />
                 </button>
               </div>

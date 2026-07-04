@@ -91,7 +91,7 @@ export default function DynamicSections({ sections = [], accent = '#c9a15c', tex
             </button>
             {isOpen && (
               <div className="px-3.5 pb-3.5 space-y-3">
-                {s.body && <p className="text-sm opacity-75 whitespace-pre-line">{s.body}</p>}
+                {s.body && <p className="text-sm opacity-75 whitespace-pre-line break-words">{s.body}</p>}
                 <SectionItems type={s.type} items={s.items} accent={accent} />
               </div>
             )}

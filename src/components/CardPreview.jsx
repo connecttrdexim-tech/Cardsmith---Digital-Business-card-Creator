@@ -56,7 +56,7 @@ const CardPreview = forwardRef(function CardPreview({ card }, ref) {
           </div>
         </div>
 
-        {card.description && <p className={`text-sm ${theme.subtext} mb-4 leading-relaxed`}>{card.description}</p>}
+        {card.description && <p className={`text-sm ${theme.subtext} mb-4 leading-relaxed break-words`}>{card.description}</p>}
 
         {card.workingHours && (
           <div className={`flex items-center gap-1.5 text-xs ${theme.subtext} mb-4`}>

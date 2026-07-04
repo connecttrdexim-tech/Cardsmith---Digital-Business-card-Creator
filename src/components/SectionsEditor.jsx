@@ -31,7 +31,7 @@ function ItemEditor({ type, item, onChange, onRemove }) {
   }
   if (type === 'team') {
     return (
-      <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-ink-50 relative">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 p-3 rounded-lg bg-ink-50 relative">
         <FormField label="Name" value={item.name} onChange={(v) => onChange({ ...item, name: v })} />
         <FormField label="Role" value={item.role} onChange={(v) => onChange({ ...item, role: v })} />
         <button onClick={onRemove} className="absolute top-2 right-2 text-ink-400 hover:text-red-500"><Trash2 size={14} /></button>
@@ -39,10 +39,10 @@ function ItemEditor({ type, item, onChange, onRemove }) {
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-ink-50 relative">
+    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 p-3 rounded-lg bg-ink-50 relative">
       <FormField label="Name" value={item.name} onChange={(v) => onChange({ ...item, name: v })} />
       <FormField label="Link (optional)" value={item.link} onChange={(v) => onChange({ ...item, link: v })} />
-      <div className="col-span-2">
+      <div className="col-span-1 xs:col-span-2">
         <FormField label="Description" value={item.description} onChange={(v) => onChange({ ...item, description: v })} textarea rows={2} />
       </div>
       <button onClick={onRemove} className="absolute top-2 right-2 text-ink-400 hover:text-red-500"><Trash2 size={14} /></button>
@@ -81,8 +81,8 @@ export default function SectionsEditor({ sections, onChange }) {
     <div className="space-y-4">
       {sections.map((s) => (
         <div key={s.id} className="border border-ink-100 rounded-xl p-3.5">
-          <div className="flex items-center gap-2 mb-3">
-            <GripVertical size={14} className="text-ink-300" />
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <GripVertical size={14} className="text-ink-300 hidden xs:block shrink-0" />
             <select
               value={s.type}
               onChange={(e) => {
@@ -90,21 +90,21 @@ export default function SectionsEditor({ sections, onChange }) {
                 const label = SECTION_TYPES.find((t) => t.value === type)?.label || 'Section';
                 updateSection(s.id, { type, title: s.title === '' ? label : s.title, items: [] });
               }}
-              className="text-sm border border-ink-200 rounded-lg px-2 py-1.5 bg-white"
+              className="text-sm border border-ink-200 rounded-lg px-2 py-1.5 bg-white min-w-[9.5rem] flex-1 xs:flex-none"
             >
               {SECTION_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
+            <button onClick={() => removeSection(s.id)} className="text-ink-400 hover:text-red-500 shrink-0 order-1 xs:order-none ml-auto xs:ml-0">
+              <Trash2 size={16} />
+            </button>
             <input
               value={s.title}
               onChange={(e) => updateSection(s.id, { title: e.target.value })}
               placeholder="Section title"
-              className="flex-1 text-sm border border-ink-200 rounded-lg px-2.5 py-1.5"
+              className="w-full xs:flex-1 text-sm border border-ink-200 rounded-lg px-2.5 py-1.5"
             />
-            <button onClick={() => removeSection(s.id)} className="text-ink-400 hover:text-red-500 shrink-0">
-              <Trash2 size={16} />
-            </button>
           </div>
 
           <FormField label="Body text (optional)" value={s.body} onChange={(v) => updateSection(s.id, { body: v })} textarea rows={2} />

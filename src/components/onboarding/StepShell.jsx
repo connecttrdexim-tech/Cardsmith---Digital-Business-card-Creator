@@ -36,24 +36,24 @@ export default function StepShell({
 
       <div className="space-y-4 mb-8">{children}</div>
 
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          {showBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2.5 rounded-lg border border-ink-200 hover:bg-ink-50"
-            >
-              <ArrowLeft size={15} /> Back
-            </button>
-          )}
-        </div>
+      <div className="flex flex-col-reverse xs:flex-row items-stretch xs:items-center justify-between gap-3">
+        {showBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center justify-center gap-1.5 text-sm font-medium px-3.5 py-2.5 rounded-lg border border-ink-200 hover:bg-ink-50"
+          >
+            <ArrowLeft size={15} /> Back
+          </button>
+        ) : (
+          <span />
+        )}
         <div className="flex items-center gap-2">
           {showSkip && (
             <button
               type="button"
               onClick={onSkip}
-              className="inline-flex items-center gap-1.5 text-sm font-medium px-3.5 py-2.5 rounded-lg text-ink-400 hover:text-ink-600 hover:bg-ink-50"
+              className="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 text-sm font-medium px-3.5 py-2.5 rounded-lg text-ink-400 hover:text-ink-600 hover:bg-ink-50"
             >
               <SkipForward size={14} /> Skip
             </button>
@@ -61,7 +61,7 @@ export default function StepShell({
           <button
             type="button"
             onClick={onNext}
-            className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800"
+            className="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800"
           >
             {nextLabel} <ArrowRight size={15} />
           </button>

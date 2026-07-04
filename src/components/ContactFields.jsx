@@ -7,7 +7,7 @@ export default function ContactFields({ card, set }) {
       <FormField label="WhatsApp number" value={card.whatsapp} onChange={(v) => set({ whatsapp: v })} placeholder="+91 98765 43210" />
       <FormField label="WhatsApp opening message" value={card.whatsappMessage} onChange={(v) => set({ whatsappMessage: v })} />
       <FormField label="Email address" value={card.email} onChange={(v) => set({ email: v })} type="email" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
         <FormField label="Email subject (optional)" value={card.emailSubject} onChange={(v) => set({ emailSubject: v })} />
         <FormField label="Email body (optional)" value={card.emailBody} onChange={(v) => set({ emailBody: v })} />
       </div>
