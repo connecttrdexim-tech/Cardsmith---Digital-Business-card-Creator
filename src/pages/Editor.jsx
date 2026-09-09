@@ -20,7 +20,7 @@ import CardForm from '../components/CardForm.jsx';
 import CardPreview from '../components/CardPreview.jsx';
 import QRCodeModal from '../components/QRCodeModal.jsx';
 import ShareModal from '../components/ShareModal.jsx';
-import { buildShareUrl } from '../utils/share.js';
+import { publishCard } from '../utils/share.js';
 import { downloadVcf } from '../utils/vcf.js';
 import { downloadJson } from '../utils/jsonIO.js';
 import { exportNodeAsPng, exportNodeAsPdf, printNode } from '../utils/exportCard.js';
@@ -33,6 +33,9 @@ export default function Editor() {
   const [mobileTab, setMobileTab] = useState('edit');
   const [showQr, setShowQr] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState('');
   const previewRef = useRef(null);
   const saveTimer = useRef(null);
 
@@ -45,6 +48,7 @@ export default function Editor() {
 
   const handleChange = useCallback((next) => {
     setCard(next);
+    setShareUrl('');
     setSaved(false);
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
@@ -59,11 +63,26 @@ export default function Editor() {
     setSaved(true);
   }
 
+  async function openShare(kind) {
+    setPublishing(true);
+    setPublishError('');
+    try {
+      await saveNow();
+      const url = shareUrl || await publishCard(card);
+      setShareUrl(url);
+      if (kind === 'qr') setShowQr(true);
+      else setShowShare(true);
+    } catch (error) {
+      setPublishError(error.message || 'Could not publish this card.');
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   if (!card) {
     return <div className="min-h-screen flex items-center justify-center text-ink-400">Loading…</div>;
   }
 
-  const shareUrl = buildShareUrl(card);
   const cardName = card.companyName || card.ownerName || 'Business card';
 
   return (
@@ -71,25 +90,25 @@ export default function Editor() {
       <header className="border-b border-ink-100 bg-white/90 backdrop-blur sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <button onClick={() => navigate('/')} className="p-2 rounded-lg hover:bg-ink-50 shrink-0" aria-label="Back">
+            <button onClick={async () => { await saveNow(); navigate('/'); }} className="p-2 rounded-lg hover:bg-ink-50 shrink-0" aria-label="Back">
               <ArrowLeft size={18} />
             </button>
             <div className="min-w-0">
               <p className="font-display font-semibold text-ink-900 truncate">{cardName}</p>
               <p className="text-[11px] text-ink-400 flex items-center gap-1">
-                {saved ? <><Check size={11} /> Saved</> : 'Saving…'}
+                {saved ? <><Check size={11} /> Saved in this browser</> : 'Saving…'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            <button onClick={saveNow} className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50">
-              <Save size={14} /> Save
+            <button title="Save immediately to this browser" onClick={saveNow} className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50">
+              <Save size={14} /> Save now
             </button>
-            <button onClick={() => setShowQr(true)} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50">
-              <QrCode size={14} /> QR
+            <button disabled={publishing} onClick={() => openShare('qr')} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 disabled:opacity-50">
+              <QrCode size={14} /> {publishing ? 'Publishing…' : 'QR'}
             </button>
-            <button onClick={() => setShowShare(true)} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800">
+            <button disabled={publishing} onClick={() => openShare('share')} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-ink-900 text-white hover:bg-ink-800 disabled:opacity-50">
               <Share2 size={14} /> Share
             </button>
           </div>
@@ -111,6 +130,8 @@ export default function Editor() {
           </button>
         </div>
       </header>
+
+      {publishError && <div role="alert" className="max-w-6xl mx-auto mt-4 px-4 text-sm text-red-700">{publishError}</div>}
 
       <div className="max-w-6xl mx-auto grid sm:grid-cols-2 gap-0 sm:gap-8 px-4 sm:px-6 py-6">
         {/* Form */}

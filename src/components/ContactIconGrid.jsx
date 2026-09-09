@@ -33,7 +33,7 @@ function XIcon(props) {
   );
 }
 
-export default function ContactIconGrid({ card, accent = '#c9a15c', textClass = 'text-ink-800' }) {
+export default function ContactIconGrid({ card, accent = '#c9a15c', textClass = 'text-ink-800', buttonStyle = 'pill' }) {
   const [copied, setCopied] = useState(false);
 
   const actions = [
@@ -42,9 +42,13 @@ export default function ContactIconGrid({ card, accent = '#c9a15c', textClass = 
       icon: Phone,
       label: 'Call',
       onClick: async () => {
-        await copyPhone(card.phone);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
+        try {
+          await copyPhone(card.phone);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {
+          // Calling should still work when clipboard permission is unavailable.
+        }
         callPhone(card.phone);
       },
     },
@@ -129,7 +133,7 @@ export default function ContactIconGrid({ card, accent = '#c9a15c', textClass = 
           title={label}
         >
           <span
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+            className={`w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105 ${buttonStyle === 'square' ? 'rounded-none' : buttonStyle === 'rounded' ? 'rounded-lg' : 'rounded-full'}`}
             style={{ backgroundColor: `${accent}22`, color: accent }}
           >
             {key === 'phone' && copied ? <Check size={17} /> : <Icon size={17} />}

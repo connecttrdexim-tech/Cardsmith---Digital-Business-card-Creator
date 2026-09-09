@@ -1,6 +1,7 @@
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { SECTION_TYPES } from '../data/cardModel.js';
 import FormField from './FormField.jsx';
+import ImageUploadField from './ImageUploadField.jsx';
 
 function emptyItemForType(type) {
   const id = crypto.randomUUID();
@@ -34,6 +35,7 @@ function ItemEditor({ type, item, onChange, onRemove }) {
       <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 p-3 rounded-lg bg-ink-50 relative">
         <FormField label="Name" value={item.name} onChange={(v) => onChange({ ...item, name: v })} />
         <FormField label="Role" value={item.role} onChange={(v) => onChange({ ...item, role: v })} />
+        <div className="col-span-1 xs:col-span-2"><ImageUploadField label="Photo" value={item.image} onChange={(image) => onChange({ ...item, image })} shape="circle" /></div>
         <button onClick={onRemove} className="absolute top-2 right-2 text-ink-400 hover:text-red-500"><Trash2 size={14} /></button>
       </div>
     );
@@ -45,6 +47,7 @@ function ItemEditor({ type, item, onChange, onRemove }) {
       <div className="col-span-1 xs:col-span-2">
         <FormField label="Description" value={item.description} onChange={(v) => onChange({ ...item, description: v })} textarea rows={2} />
       </div>
+      <div className="col-span-1 xs:col-span-2"><ImageUploadField label="Image (optional)" value={item.image} onChange={(image) => onChange({ ...item, image })} /></div>
       <button onClick={onRemove} className="absolute top-2 right-2 text-ink-400 hover:text-red-500"><Trash2 size={14} /></button>
     </div>
   );
@@ -88,7 +91,7 @@ export default function SectionsEditor({ sections, onChange }) {
               onChange={(e) => {
                 const type = e.target.value;
                 const label = SECTION_TYPES.find((t) => t.value === type)?.label || 'Section';
-                updateSection(s.id, { type, title: s.title === '' ? label : s.title, items: [] });
+                updateSection(s.id, { type, title: s.title === '' ? label : s.title });
               }}
               className="text-sm border border-ink-200 rounded-lg px-2 py-1.5 bg-white min-w-[9.5rem] flex-1 xs:flex-none"
             >

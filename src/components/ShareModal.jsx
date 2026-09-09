@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { X, Copy, Check, Share2, MessageCircle, Mail, Send, AlertTriangle } from 'lucide-react';
-import { copyToClipboard, nativeShare, shareViaWhatsApp, shareViaTelegram, shareViaEmail, estimateLinkWeight } from '../utils/share.js';
+import { copyToClipboard, nativeShare, shareViaWhatsApp, shareViaTelegram, shareViaEmail, isLocalShareUrl } from '../utils/share.js';
 
 export default function ShareModal({ url, cardName, onClose }) {
   const [copied, setCopied] = useState(false);
-  const weight = estimateLinkWeight(url);
+  const [copyError, setCopyError] = useState('');
 
   async function handleCopy() {
-    await copyToClipboard(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await copyToClipboard(url);
+      setCopyError('');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyError('Copy was blocked. Select the link and copy it manually.');
+    }
   }
 
   async function handleNativeShare() {
@@ -25,15 +30,14 @@ export default function ShareModal({ url, cardName, onClose }) {
         </button>
         <h3 className="font-display text-lg font-semibold mb-1">Share this card</h3>
         <p className="text-xs text-ink-400 mb-4">
-          The card's data lives inside this link itself — there's no server, so anyone with the link can view it.
+          This short link opens the published version of your card. Anyone with the link can view it.
         </p>
 
-        {weight.level !== 'ok' && (
+        {isLocalShareUrl(url) && (
           <div className="flex items-start gap-2 text-xs bg-amber-50 text-amber-800 rounded-lg p-2.5 mb-4">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <span>
-              This link is quite long ({weight.length.toLocaleString()} characters), usually because of large photos.
-              Some apps may clip very long links — consider smaller images if sharing fails.
+              This is a local development address. Set VITE_PUBLIC_APP_URL and deploy the Cardsmith server before sending it to another person.
             </span>
           </div>
         )}
@@ -44,6 +48,7 @@ export default function ShareModal({ url, cardName, onClose }) {
             {copied ? <Check size={16} /> : <Copy size={16} />}
           </button>
         </div>
+        {copyError && <p role="alert" className="text-xs text-red-600 -mt-2 mb-3">{copyError}</p>}
 
         <div className="grid grid-cols-2 gap-2">
           <button onClick={handleNativeShare} className="flex items-center justify-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-ink-200 hover:bg-ink-50">

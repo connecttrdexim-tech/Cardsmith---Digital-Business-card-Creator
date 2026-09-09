@@ -1,9 +1,7 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
-// Because there is no backend, a "shareable link" cannot point at a server
-// record. Instead the entire card is compressed and embedded directly in
-// the URL hash. Anyone who opens the link decodes the card client-side —
-// the link IS the data. This keeps the app truly static/self-hostable.
+// Legacy embedded-data links are decoded for backwards compatibility.
+// New shares are published through the API and use short /c/:slug routes.
 
 export function encodeCardToParam(card) {
   const json = JSON.stringify(card);
@@ -26,6 +24,48 @@ export function buildShareUrl(card) {
   return `${base}#/view/${encoded}`;
 }
 
+function publicBaseUrl() {
+  const configured = import.meta.env.VITE_PUBLIC_APP_URL?.trim();
+  return (configured || `${window.location.origin}${window.location.pathname}`).replace(/\/$/, '');
+}
+
+export function buildShortShareUrl(slug) {
+  return `${publicBaseUrl()}/#/c/${slug}`;
+}
+
+export async function publishCard(card) {
+  let response;
+  try {
+    response = await fetch('./api/cards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card }),
+    });
+  } catch {
+    throw new Error('The sharing service is unavailable. Start Cardsmith with npm start and try again.');
+  }
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.slug) throw new Error(result.error || 'Could not create a share link.');
+  return buildShortShareUrl(result.slug);
+}
+
+export async function fetchPublishedCard(slug) {
+  let response;
+  try {
+    response = await fetch(`./api/cards/${encodeURIComponent(slug)}`);
+  } catch {
+    throw new Error('The shared card could not be loaded because the sharing service is unavailable.');
+  }
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.card) throw new Error(result.error || 'This card was not found.');
+  return result.card;
+}
+
+export function isLocalShareUrl(url) {
+  try { return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname); }
+  catch { return false; }
+}
+
 // Rough size warning: very large embedded photos/gallery images make the
 // link unwieldy (some chat apps clip extremely long URLs). 6000 chars is a
 // practical, conservative threshold — well under real browser URL limits.
@@ -37,7 +77,18 @@ export function estimateLinkWeight(url) {
 }
 
 export async function copyToClipboard(text) {
-  await navigator.clipboard.writeText(text);
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(text); return; } catch { /* use fallback */ }
+  }
+  const input = document.createElement('textarea');
+  input.value = text;
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  const copied = document.execCommand('copy');
+  input.remove();
+  if (!copied) throw new Error('Clipboard access was blocked.');
 }
 
 export async function nativeShare({ title, text, url }) {

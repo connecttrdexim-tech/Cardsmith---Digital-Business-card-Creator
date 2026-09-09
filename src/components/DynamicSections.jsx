@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
+function safeExternalLink(value) {
+  try {
+    const url = new URL(value, window.location.origin);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch { return ''; }
+}
+
 function SectionItems({ type, items, accent }) {
   if (!items?.length) return null;
 
@@ -58,8 +65,8 @@ function SectionItems({ type, items, accent }) {
           <div className="p-2">
             <p className="text-xs font-medium">{it.name}</p>
             {it.description && <p className="text-[11px] opacity-60 mt-0.5">{it.description}</p>}
-            {it.link && (
-              <a href={it.link} target="_blank" rel="noreferrer" className="text-[11px] underline" style={{ color: accent }}>
+            {safeExternalLink(it.link) && (
+              <a href={safeExternalLink(it.link)} target="_blank" rel="noreferrer" className="text-[11px] underline" style={{ color: accent }}>
                 View
               </a>
             )}

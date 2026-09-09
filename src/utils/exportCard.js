@@ -39,13 +39,16 @@ export async function exportNodeAsPdf(node, filename = 'business-card.pdf') {
   pdf.save(filename);
 }
 
-export function printNode(node) {
+export async function printNode(node) {
   const printWindow = window.open('', '_blank');
+  if (!printWindow) throw new Error('The print window was blocked.');
+  const canvas = await renderToCanvas(node);
+  const image = canvas.toDataURL('image/png');
   printWindow.document.write(`
     <html>
       <head><title>Print Card</title></head>
       <body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;">
-        ${node.outerHTML}
+        <img src="${image}" alt="Business card" style="max-width:100%;height:auto" />
       </body>
     </html>
   `);

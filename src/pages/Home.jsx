@@ -4,6 +4,7 @@ import { Plus, Trash2, Upload, CreditCard, Copy, Download } from 'lucide-react';
 import { listCards, saveCard, deleteCard } from '../db/storage.js';
 import { createEmptyCard } from '../data/cardModel.js';
 import { readJsonFile, downloadJson } from '../utils/jsonIO.js';
+import { normalizeCard } from '../utils/cardValidation.js';
 
 export default function Home() {
   const [cards, setCards] = useState([]);
@@ -43,7 +44,7 @@ export default function Home() {
     if (!file) return;
     try {
       const data = await readJsonFile(file);
-      const card = { ...createEmptyCard(), ...data, id: crypto.randomUUID(), updatedAt: Date.now() };
+      const card = normalizeCard(data, { newId: true });
       await saveCard(card);
       refresh();
     } catch {

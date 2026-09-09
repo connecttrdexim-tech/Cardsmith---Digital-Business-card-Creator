@@ -11,6 +11,7 @@ export default function App() {
       <Route path="/onboarding/:id" element={<Onboarding />} />
       <Route path="/editor/:id" element={<Editor />} />
       <Route path="/view/:payload" element={<ViewCard />} />
+      <Route path="/c/:slug" element={<ViewCard />} />
       <Route path="*" element={<Home />} />
     </Routes>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { X, Eye } from 'lucide-react';
 import { getCard, saveCard } from '../db/storage.js';
 import { createEmptyCard } from '../data/cardModel.js';
@@ -13,6 +13,7 @@ import DesignFields from '../components/DesignFields.jsx';
 import SectionsEditor from '../components/SectionsEditor.jsx';
 import GalleryEditor from '../components/GalleryEditor.jsx';
 import CardPreview from '../components/CardPreview.jsx';
+import { normalizeCard } from '../utils/cardValidation.js';
 
 // step 0 = start screen, step N+1 = finish screen
 const STEPS = [
@@ -56,17 +57,17 @@ export default function Onboarding() {
   }
 
   async function handleImported(data) {
-    const merged = { ...createEmptyCard(), ...data, id, updatedAt: Date.now() };
+    const merged = { ...normalizeCard(data), id, updatedAt: Date.now() };
     await saveCard(merged);
     // Imported cards already have their details — skip straight to the editor.
     navigate(`/editor/${id}`);
   }
 
-  function goNext() {
+  async function goNext() {
     if (stepIdx < STEPS.length - 1) {
       setStepIdx((i) => i + 1);
     } else {
-      saveCard(card);
+      await saveCard(card);
       setPhase('finish');
     }
     window.scrollTo({ top: 0 });
@@ -81,8 +82,9 @@ export default function Onboarding() {
     window.scrollTo({ top: 0 });
   }
 
-  function finishToEditor() {
-    saveCard(card);
+  async function finishToEditor() {
+    clearTimeout(saveTimer.current);
+    await saveCard(card);
     navigate(`/editor/${id}`);
   }
 
@@ -106,9 +108,9 @@ export default function Onboarding() {
                 <Eye size={13} /> Preview
               </button>
             )}
-            <Link to="/" className="p-2 rounded-lg hover:bg-ink-50 text-ink-400" aria-label="Exit to home">
+            <button onClick={async () => { clearTimeout(saveTimer.current); await saveCard(card); navigate('/'); }} className="p-2 rounded-lg hover:bg-ink-50 text-ink-400" aria-label="Exit to home">
               <X size={17} />
-            </Link>
+            </button>
           </div>
         </div>
       </header>

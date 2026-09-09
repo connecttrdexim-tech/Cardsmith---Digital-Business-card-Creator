@@ -48,7 +48,7 @@ export const createEmptyCard = () => ({
   primaryColor: '#161c33',
   accentColor: '#c9a15c',
   buttonStyle: 'pill', // pill | rounded | square
-  font: 'inter', // inter | fraunces | system
+  layout: 'classic', // classic | centered | banner | split
 
   // Content
   sections: [],

@@ -8,7 +8,8 @@ import GalleryCarousel from './GalleryCarousel.jsx';
 const CardPreview = forwardRef(function CardPreview({ card }, ref) {
   const theme = THEMES[card.theme] || THEMES.modern;
   const accent = card.accentColor || theme.accent;
-  const fontClass = card.font === 'fraunces' ? 'font-display' : 'font-body';
+  const primary = card.primaryColor || theme.primary;
+  const layout = card.layout || 'classic';
 
   const patternLayer =
     theme.pattern === 'grain' ? (
@@ -20,13 +21,17 @@ const CardPreview = forwardRef(function CardPreview({ card }, ref) {
   return (
     <div
       ref={ref}
-      className={`relative w-full max-w-sm mx-auto ${theme.radius} ${theme.border} ${theme.surface} ${theme.text} ${fontClass} shadow-card overflow-hidden`}
+      className={`relative w-full max-w-sm mx-auto ${theme.radius} ${theme.border} ${theme.surface} ${theme.text} font-body shadow-card overflow-hidden`}
     >
       {patternLayer}
 
-      <div className="relative p-6 pb-8">
-        {/* Header: logo + identity */}
-        <div className="flex items-start justify-between mb-4">
+      {layout === 'banner' && <div className="relative h-20 px-6 pt-5" style={{ backgroundColor: primary }}>
+        <span className="text-xs uppercase tracking-widest text-white/80">{card.companyName || 'Your Company'}</span>
+      </div>}
+      {layout === 'split' && <div className="absolute left-0 inset-y-0 w-2" style={{ backgroundColor: accent }} />}
+
+      <div className={`relative p-6 pb-8 ${layout === 'banner' ? '-mt-8' : ''} ${layout === 'split' ? 'pl-8' : ''}`}>
+        <div className={`flex items-start justify-between mb-4 ${layout === 'centered' ? 'justify-center' : ''} ${layout === 'banner' ? 'invisible h-0 mb-0' : ''}`}>
           {card.logo ? (
             <img src={card.logo} alt={`${card.companyName} logo`} className="h-9 object-contain" />
           ) : (
@@ -34,9 +39,9 @@ const CardPreview = forwardRef(function CardPreview({ card }, ref) {
           )}
         </div>
 
-        <div className="flex items-center gap-4 mb-4">
+        <div className={`flex gap-4 mb-4 ${layout === 'centered' ? 'flex-col items-center text-center' : 'items-center'} ${layout === 'split' ? 'flex-row-reverse justify-between text-right' : ''}`}>
           <div
-            className="w-16 h-16 rounded-full overflow-hidden shrink-0 ring-2"
+            className={`${layout === 'banner' ? 'w-20 h-20 ring-4 ring-white' : 'w-16 h-16 ring-2'} rounded-full overflow-hidden shrink-0`}
             style={{ '--tw-ring-color': `${accent}55` }}
           >
             {card.profilePicture ? (
@@ -48,7 +53,7 @@ const CardPreview = forwardRef(function CardPreview({ card }, ref) {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className={`text-lg font-semibold leading-tight truncate ${theme.pattern === 'grain' ? '' : ''}`}>
+            <h1 className="font-display text-lg font-semibold leading-tight truncate">
               {card.ownerName || 'Your Name'}
             </h1>
             {card.designation && <p className={`text-sm ${theme.subtext} truncate`}>{card.designation}</p>}
@@ -66,7 +71,7 @@ const CardPreview = forwardRef(function CardPreview({ card }, ref) {
         )}
 
         <div className="mb-5">
-          <ContactIconGrid card={card} accent={accent} textClass={theme.text} />
+          <ContactIconGrid card={card} accent={accent} textClass={theme.text} buttonStyle={card.buttonStyle} />
         </div>
 
         {card.gallery?.length > 0 && (

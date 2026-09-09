@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { IdCard, Download, Share2, QrCode, CreditCard, PlusCircle } from 'lucide-react';
-import { decodeCardFromParam, buildShareUrl } from '../utils/share.js';
+import { decodeCardFromParam, buildShortShareUrl, fetchPublishedCard, publishCard } from '../utils/share.js';
+import { normalizeCard } from '../utils/cardValidation.js';
 import { downloadVcf } from '../utils/vcf.js';
 import { exportNodeAsPng } from '../utils/exportCard.js';
 import { saveCard } from '../db/storage.js';
@@ -10,16 +11,33 @@ import QRCodeModal from '../components/QRCodeModal.jsx';
 import ShareModal from '../components/ShareModal.jsx';
 
 export default function ViewCard() {
-  const { payload } = useParams();
+  const { payload, slug } = useParams();
   const [card, setCard] = useState(undefined); // undefined = loading, null = invalid
   const [showQr, setShowQr] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [savedCopy, setSavedCopy] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const [loadMessage, setLoadMessage] = useState('This card link is invalid or no longer available.');
   const previewRef = useRef(null);
 
   useEffect(() => {
-    setCard(decodeCardFromParam(payload));
-  }, [payload]);
+    let active = true;
+    setCard(undefined);
+    (async () => {
+      try {
+        const raw = slug ? await fetchPublishedCard(slug) : decodeCardFromParam(payload);
+        if (!raw) throw new Error('This card link looks incomplete.');
+        if (active) {
+          setCard(normalizeCard(raw));
+          setShareUrl(slug ? buildShortShareUrl(slug) : '');
+        }
+      } catch (error) {
+        if (active) { setLoadMessage(error.message); setCard(null); }
+      }
+    })();
+    return () => { active = false; };
+  }, [payload, slug]);
 
   if (card === undefined) {
     return <div className="min-h-screen flex items-center justify-center text-ink-400">Loading…</div>;
@@ -29,14 +47,24 @@ export default function ViewCard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
         <p className="font-display text-xl text-ink-800 mb-2">This card link looks broken</p>
-        <p className="text-sm text-ink-400 mb-6">It may have been cut off when it was shared.</p>
+        <p className="text-sm text-ink-400 mb-6">{loadMessage}</p>
         <Link to="/" className="text-sm font-medium px-4 py-2 rounded-lg bg-ink-900 text-white">Go to Cardsmith</Link>
       </div>
     );
   }
 
-  const shareUrl = buildShareUrl(card);
   const cardName = card.companyName || card.ownerName || 'Business card';
+
+  async function openShare(kind) {
+    setPublishing(true);
+    try {
+      const url = shareUrl || await publishCard(card);
+      setShareUrl(url);
+      kind === 'qr' ? setShowQr(true) : setShowShare(true);
+    } catch (error) {
+      alert(error.message || 'Could not create a share link.');
+    } finally { setPublishing(false); }
+  }
 
   async function keepInMyCards() {
     const copy = { ...card, id: crypto.randomUUID(), updatedAt: Date.now() };
@@ -75,13 +103,15 @@ export default function ViewCard() {
             <IdCard size={15} /> Add to contacts
           </button>
           <button
-            onClick={() => setShowShare(true)}
+            onClick={() => openShare('share')}
+            disabled={publishing}
             className="inline-flex items-center justify-center gap-1.5 text-sm font-medium px-3 py-2.5 rounded-lg border border-ink-200 hover:bg-ink-50"
           >
             <Share2 size={15} /> Share
           </button>
           <button
-            onClick={() => setShowQr(true)}
+            onClick={() => openShare('qr')}
+            disabled={publishing}
             className="inline-flex items-center justify-center gap-1.5 text-sm font-medium px-3 py-2.5 rounded-lg border border-ink-200 hover:bg-ink-50"
           >
             <QrCode size={15} /> QR code

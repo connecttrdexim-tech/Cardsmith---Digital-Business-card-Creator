@@ -1,0 +1,56 @@
+{
+  "companyName": "Northstar Studio",
+  "ownerName": "Aarav Sharma",
+  "designation": "Product Designer",
+  "description": "Clear digital experiences for growing businesses",
+  "phone": "+91 98765 43210",
+  "whatsapp": "+91 98765 43210",
+  "email": "hello@northstar.example",
+  "website": "https://example.com",
+  "address": "Bengaluru, Karnataka, India",
+  "linkedin": "https://www.linkedin.com",
+  "instagram": "https://www.instagram.com",
+  "github": "https://github.com",
+  "theme": "modern",
+  "primaryColor": "#161c33",
+  "accentColor": "#2563eb",
+  "buttonStyle": "rounded",
+  "layout": "banner",
+  "sections": [
+    {
+      "id": "sample-about",
+      "type": "about",
+      "title": "About Northstar",
+      "body": "We design practical websites and digital products for small teams.",
+      "items": []
+    },
+    {
+      "id": "sample-services",
+      "type": "services",
+      "title": "Services",
+      "body": "",
+      "items": [
+        {
+          "id": "sample-service-product",
+          "name": "Product design",
+          "description": "User-focused product flows and interfaces",
+          "link": ""
+        },
+        {
+          "id": "sample-service-web",
+          "name": "Website design",
+          "description": "Responsive websites for growing businesses",
+          "link": "https://example.com"
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "id": "sample-youtube",
+      "type": "youtube",
+      "src": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "caption": "Sample embedded video"
+    }
+  ]
+}

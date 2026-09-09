@@ -1,9 +1,12 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Plus, Trash2, Youtube } from 'lucide-react';
 import { readImageAsDataUrl } from '../utils/jsonIO.js';
 
 export default function GalleryEditor({ gallery, onChange }) {
   const fileRef = useRef(null);
+  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeError, setYoutubeError] = useState('');
 
   async function handleFiles(e) {
     const files = Array.from(e.target.files || []);
@@ -19,12 +22,36 @@ export default function GalleryEditor({ gallery, onChange }) {
     e.target.value = '';
   }
 
+  function getYoutubeId(value) {
+    try {
+      const url = new URL(value.trim());
+      const host = url.hostname.replace(/^www\./, '').replace(/^m\./, '');
+      let id = '';
+      if (host === 'youtu.be') id = url.pathname.split('/').filter(Boolean)[0] || '';
+      if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+        id = url.searchParams.get('v') || '';
+        if (!id) {
+          const parts = url.pathname.split('/').filter(Boolean);
+          if (['embed', 'shorts', 'live'].includes(parts[0])) id = parts[1] || '';
+        }
+      }
+      return /^[\w-]{11}$/.test(id) ? id : '';
+    } catch {
+      return '';
+    }
+  }
+
   function addYoutube() {
-    const url = prompt('Paste a YouTube video URL:');
-    if (!url) return;
-    const idMatch = url.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
-    const embedSrc = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : url;
+    const id = getYoutubeId(youtubeUrl);
+    if (!id) {
+      setYoutubeError('Enter a valid YouTube watch, Shorts, live, embed, or youtu.be link.');
+      return;
+    }
+    const embedSrc = `https://www.youtube.com/embed/${id}`;
     onChange([...gallery, { id: crypto.randomUUID(), type: 'youtube', src: embedSrc, caption: '' }]);
+    setYoutubeUrl('');
+    setYoutubeError('');
+    setShowYoutubeInput(false);
   }
 
   function updateCaption(id, caption) {
@@ -62,6 +89,27 @@ export default function GalleryEditor({ gallery, onChange }) {
         ))}
       </div>
 
+      {showYoutubeInput && (
+        <div className="rounded-xl border border-ink-200 bg-ink-50 p-3 space-y-2">
+          <label htmlFor="youtube-url" className="block text-xs font-medium text-ink-700">YouTube video URL</label>
+          <input
+            id="youtube-url"
+            type="url"
+            value={youtubeUrl}
+            onChange={(e) => { setYoutubeUrl(e.target.value); setYoutubeError(''); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addYoutube(); } }}
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+            autoFocus
+          />
+          {youtubeError && <p role="alert" className="text-xs text-red-600">{youtubeError}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => { setShowYoutubeInput(false); setYoutubeUrl(''); setYoutubeError(''); }} className="text-xs px-3 py-2 text-ink-500">Cancel</button>
+            <button type="button" onClick={addYoutube} className="text-xs font-medium px-3 py-2 rounded-lg bg-ink-900 text-white">Add video</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <button
           onClick={() => fileRef.current?.click()}
@@ -70,7 +118,7 @@ export default function GalleryEditor({ gallery, onChange }) {
           <Plus size={13} /> Add photos
         </button>
         <button
-          onClick={addYoutube}
+          onClick={() => setShowYoutubeInput(true)}
           className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border border-dashed border-ink-300 hover:bg-ink-50"
         >
           <Youtube size={13} /> Add YouTube
