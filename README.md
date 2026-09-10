@@ -29,8 +29,7 @@ Then open `http://localhost:4173`.
 - Use **QR code** or **Share link** from the finished-card screen.
 - Use **Open in full editor** for detailed changes and exports.
 - **Save now** stores the draft in the current browser. Changes also autosave.
-- Sharing creates a short server-backed link when the share service is available.
-- Static hosting falls back to a portable link stored in the URL.
+- Sharing stores the complete card and creates a short server-backed link.
 
 After editing a published card, share it again to publish the latest version.
 
@@ -71,4 +70,4 @@ npm run build
 npm start
 ```
 
-`npm run preview` uses portable links because it does not include the share API.
+Vercel deployments require a connected private Blob store for short links.

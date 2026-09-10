@@ -32,33 +32,6 @@ export function buildShortShareUrl(slug) {
   return `${publicBaseUrl()}/#/c/${slug}`;
 }
 
-export function isPortableShareUrl(url) {
-  return url.includes('#/view/');
-}
-
-function withoutEmbeddedUploads(card) {
-  const keepExternal = (value) => typeof value === 'string' && !value.startsWith('data:') ? value : '';
-  return {
-    ...card,
-    logo: keepExternal(card.logo),
-    profilePicture: keepExternal(card.profilePicture),
-    sections: (card.sections || []).map((section) => ({
-      ...section,
-      items: (section.items || []).map((item) => ({ ...item, image: keepExternal(item.image) })),
-    })),
-    gallery: (card.gallery || []).filter((item) => keepExternal(item.src)),
-  };
-}
-
-function buildPortableShareUrl(card) {
-  const completeUrl = buildShareUrl(card);
-  if (completeUrl.length <= 2800) return completeUrl;
-
-  const compactUrl = buildShareUrl(withoutEmbeddedUploads(card));
-  if (compactUrl.length <= 2800) return compactUrl;
-  throw new Error('This card is too large for a portable QR code. Run Cardsmith with npm start to create a short link.');
-}
-
 export async function publishCard(card) {
   let response;
   try {
@@ -68,11 +41,13 @@ export async function publishCard(card) {
       body: JSON.stringify({ card }),
     });
   } catch {
-    return buildPortableShareUrl(card);
+    throw new Error('The short-link service is unavailable. Please try again shortly.');
   }
   const result = await response.json().catch(() => ({}));
-  if (response.ok && result.slug) return buildShortShareUrl(result.slug);
-  return buildPortableShareUrl(card);
+  if (!response.ok || !result.slug) {
+    throw new Error(result.error || 'Could not create a complete short link.');
+  }
+  return buildShortShareUrl(result.slug);
 }
 
 export async function fetchPublishedCard(slug) {

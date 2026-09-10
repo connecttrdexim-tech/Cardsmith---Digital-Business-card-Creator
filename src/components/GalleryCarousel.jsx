@@ -16,7 +16,7 @@ export default function GalleryCarousel({ items = [], accent = '#c9a15c' }) {
     <div className="relative">
       <div
         ref={trackRef}
-        className="flex gap-3 overflow-x-auto snap-x-mandatory hide-scrollbar scroll-smooth pb-1"
+        className="flex items-start gap-3 overflow-x-auto snap-x-mandatory hide-scrollbar scroll-smooth pb-1"
       >
         {items.map((item) => (
           <div
