@@ -47,27 +47,18 @@ or **Upload a JSON file** when creating a card.
 - PNG, PDF, print, VCF, and JSON exports
 - Local autosave with no account required
 
-## Sharing with other people
+## Sharing and Vercel Blob
 
-Links containing `localhost` only work on your computer. For public sharing,
-deploy the Node.js app and build it with your public address:
+Public short links need persistent storage. On Vercel:
 
-```powershell
-$env:VITE_PUBLIC_APP_URL = "https://cards.example.com"
-npm run build
-npm start
-```
+1. Open the project and create a **private Blob store** under **Storage**.
+2. Enable **Add a read-write token env var to this connection**.
+3. Connect the store to the project and redeploy it.
 
-Published cards are stored in `data/cards.json`. Use persistent storage when
-deploying.
+Blob stores the complete published card, including its images and YouTube links.
+Keep `BLOB_READ_WRITE_TOKEN` private and never add it to GitHub.
 
-## Share error
-
-If sharing says the service is unavailable, run either `npm run dev` or:
-
-```bash
-npm run build
-npm start
-```
-
-Vercel deployments require a connected private Blob store for short links.
+Every separate Vercel deployment needs its own Blob store. Its shared cards and
+links belong to that deployment and stop working if its store is removed.
+Local development stores published cards in `data/cards.json`; `localhost` links
+only work on your computer.
