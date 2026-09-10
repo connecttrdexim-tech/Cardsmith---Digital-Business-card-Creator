@@ -20,8 +20,7 @@ export function decodeCardFromParam(param) {
 
 export function buildShareUrl(card) {
   const encoded = encodeCardToParam(card);
-  const base = window.location.origin + window.location.pathname;
-  return `${base}#/view/${encoded}`;
+  return `${publicBaseUrl()}/#/view/${encoded}`;
 }
 
 function publicBaseUrl() {
@@ -33,26 +32,53 @@ export function buildShortShareUrl(slug) {
   return `${publicBaseUrl()}/#/c/${slug}`;
 }
 
+export function isPortableShareUrl(url) {
+  return url.includes('#/view/');
+}
+
+function withoutEmbeddedUploads(card) {
+  const keepExternal = (value) => typeof value === 'string' && !value.startsWith('data:') ? value : '';
+  return {
+    ...card,
+    logo: keepExternal(card.logo),
+    profilePicture: keepExternal(card.profilePicture),
+    sections: (card.sections || []).map((section) => ({
+      ...section,
+      items: (section.items || []).map((item) => ({ ...item, image: keepExternal(item.image) })),
+    })),
+    gallery: (card.gallery || []).filter((item) => keepExternal(item.src)),
+  };
+}
+
+function buildPortableShareUrl(card) {
+  const completeUrl = buildShareUrl(card);
+  if (completeUrl.length <= 2800) return completeUrl;
+
+  const compactUrl = buildShareUrl(withoutEmbeddedUploads(card));
+  if (compactUrl.length <= 2800) return compactUrl;
+  throw new Error('This card is too large for a portable QR code. Run Cardsmith with npm start to create a short link.');
+}
+
 export async function publishCard(card) {
   let response;
   try {
-    response = await fetch('./api/cards', {
+    response = await fetch('/api/cards', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ card }),
     });
   } catch {
-    throw new Error('The sharing service is unavailable. Start Cardsmith with npm start and try again.');
+    return buildPortableShareUrl(card);
   }
   const result = await response.json().catch(() => ({}));
-  if (!response.ok || !result.slug) throw new Error(result.error || 'Could not create a share link.');
-  return buildShortShareUrl(result.slug);
+  if (response.ok && result.slug) return buildShortShareUrl(result.slug);
+  return buildPortableShareUrl(card);
 }
 
 export async function fetchPublishedCard(slug) {
   let response;
   try {
-    response = await fetch(`./api/cards/${encodeURIComponent(slug)}`);
+    response = await fetch(`/api/cards/${encodeURIComponent(slug)}`);
   } catch {
     throw new Error('The shared card could not be loaded because the sharing service is unavailable.');
   }

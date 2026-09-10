@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { X, Copy, Check, Share2, MessageCircle, Mail, Send, AlertTriangle } from 'lucide-react';
-import { copyToClipboard, nativeShare, shareViaWhatsApp, shareViaTelegram, shareViaEmail, isLocalShareUrl } from '../utils/share.js';
+import { copyToClipboard, nativeShare, shareViaWhatsApp, shareViaTelegram, shareViaEmail, isLocalShareUrl, isPortableShareUrl } from '../utils/share.js';
 
 export default function ShareModal({ url, cardName, onClose }) {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState('');
+  const portable = isPortableShareUrl(url);
 
   async function handleCopy() {
     try {
@@ -30,8 +31,17 @@ export default function ShareModal({ url, cardName, onClose }) {
         </button>
         <h3 className="font-display text-lg font-semibold mb-1">Share this card</h3>
         <p className="text-xs text-ink-400 mb-4">
-          This short link opens the published version of your card. Anyone with the link can view it.
+          {portable
+            ? 'This portable link contains the card data and works without the sharing service.'
+            : 'This short link opens the published version of your card. Anyone with the link can view it.'}
         </p>
+
+        {portable && (
+          <div className="flex items-start gap-2 text-xs bg-amber-50 text-amber-800 rounded-lg p-2.5 mb-4">
+            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+            <span>The short-link service is unavailable. Large uploaded images may be omitted from this portable link.</span>
+          </div>
+        )}
 
         {isLocalShareUrl(url) && (
           <div className="flex items-start gap-2 text-xs bg-amber-50 text-amber-800 rounded-lg p-2.5 mb-4">

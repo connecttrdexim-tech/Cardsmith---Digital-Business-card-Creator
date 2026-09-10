@@ -1,9 +1,11 @@
 import { useRef } from 'react';
 import QRCode from 'react-qr-code';
-import { X, Download, Printer } from 'lucide-react';
+import { X, Download, Printer, AlertTriangle } from 'lucide-react';
+import { isPortableShareUrl } from '../utils/share.js';
 
 export default function QRCodeModal({ url, onClose }) {
   const wrapRef = useRef(null);
+  const portable = isPortableShareUrl(url);
 
   function downloadPng() {
     const svg = wrapRef.current.querySelector('svg');
@@ -55,6 +57,12 @@ export default function QRCodeModal({ url, onClose }) {
         <div ref={wrapRef} className="bg-white p-4 rounded-xl border border-ink-100 flex items-center justify-center">
           <QRCode value={url} size={192} />
         </div>
+        {portable && (
+          <div className="flex items-start gap-2 text-xs bg-amber-50 text-amber-800 rounded-lg p-2.5 mt-3">
+            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+            <span>Portable QR created because the short-link service is unavailable. Large uploaded images may be omitted.</span>
+          </div>
+        )}
         <div className="flex gap-2 mt-4">
           <button
             onClick={downloadPng}

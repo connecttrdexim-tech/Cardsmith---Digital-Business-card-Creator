@@ -29,7 +29,8 @@ Then open `http://localhost:4173`.
 - Use **QR code** or **Share link** from the finished-card screen.
 - Use **Open in full editor** for detailed changes and exports.
 - **Save now** stores the draft in the current browser. Changes also autosave.
-- Sharing publishes a snapshot to the Cardsmith server.
+- Sharing creates a short server-backed link when the share service is available.
+- Static hosting falls back to a portable link stored in the URL.
 
 After editing a published card, share it again to publish the latest version.
 
@@ -70,4 +71,4 @@ npm run build
 npm start
 ```
 
-`npm run preview` does not include the share API.
+`npm run preview` uses portable links because it does not include the share API.
