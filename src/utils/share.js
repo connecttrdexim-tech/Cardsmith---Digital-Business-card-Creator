@@ -41,13 +41,25 @@ export async function publishCard(card) {
       body: JSON.stringify({ card }),
     });
   } catch {
-    throw new Error('The short-link service is unavailable. Please try again shortly.');
+    // Server unavailable — fall back to a fully client-side embedded URL
+    return buildShareUrl(card);
   }
   const result = await response.json().catch(() => ({}));
-  if (!response.ok || !result.slug) {
-    throw new Error(result.error || 'Could not create a complete short link.');
+  if (!response.ok) {
+    // Server error — fall back to embedded URL so sharing never breaks
+    console.warn('Card publish API error, using embedded URL fallback:', result.error);
+    return buildShareUrl(card);
   }
-  return buildShortShareUrl(result.slug);
+  // Blob storage available → short slug URL
+  if (result.slug) {
+    return buildShortShareUrl(result.slug);
+  }
+  // Embedded fallback → server returned LZ-encoded string
+  if (result.encoded) {
+    return `${publicBaseUrl()}/#/view/${result.encoded}`;
+  }
+  // Last resort: build locally
+  return buildShareUrl(card);
 }
 
 export async function fetchPublishedCard(slug) {
