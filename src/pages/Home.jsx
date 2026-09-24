@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Upload, CreditCard, Copy, Download } from 'lucide-react';
+import { Plus, Trash2, Upload, CreditCard, Copy, Download, MessageCircle } from 'lucide-react';
 import { listCards, saveCard, deleteCard } from '../db/storage.js';
 import { createEmptyCard } from '../data/cardModel.js';
 import { readJsonFile, downloadJson } from '../utils/jsonIO.js';
 import { normalizeCard } from '../utils/cardValidation.js';
+import LeadsModal from '../components/LeadsModal.jsx';
 
 export default function Home() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCardForLeads, setSelectedCardForLeads] = useState(null);
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
@@ -118,6 +120,13 @@ export default function Home() {
                 >
                   Edit
                 </button>
+                <button
+                  onClick={() => setSelectedCardForLeads(card)}
+                  className="p-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 shrink-0"
+                  title="WhatsApp Leads"
+                >
+                  <MessageCircle size={15} fill="currentColor" />
+                </button>
                 <button onClick={() => downloadJson(card)} className="p-1.5 rounded-lg border border-ink-200 hover:bg-ink-50 shrink-0" title="Download JSON">
                   <Download size={15} />
                 </button>
@@ -132,6 +141,10 @@ export default function Home() {
           ))}
         </div>
       </main>
+
+      {selectedCardForLeads && (
+        <LeadsModal card={selectedCardForLeads} onClose={() => setSelectedCardForLeads(null)} />
+      )}
     </div>
   );
 }

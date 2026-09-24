@@ -9,6 +9,8 @@ import { saveCard } from '../db/storage.js';
 import CardPreview from '../components/CardPreview.jsx';
 import QRCodeModal from '../components/QRCodeModal.jsx';
 import ShareModal from '../components/ShareModal.jsx';
+import WhatsAppAccessGate from '../components/WhatsAppAccessGate.jsx';
+import { getEffectiveWhatsAppNumber } from '../utils/whatsappGate.js';
 
 export default function ViewCard() {
   const { payload, slug } = useParams();
@@ -18,6 +20,7 @@ export default function ViewCard() {
   const [savedCopy, setSavedCopy] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
   const [loadMessage, setLoadMessage] = useState('This card link is invalid or no longer available.');
   const previewRef = useRef(null);
 
@@ -29,8 +32,15 @@ export default function ViewCard() {
         const raw = slug ? await fetchPublishedCard(slug) : decodeCardFromParam(payload);
         if (!raw) throw new Error('This card link looks incomplete.');
         if (active) {
-          setCard(normalizeCard(raw));
+          const normalized = normalizeCard(raw);
+          setCard(normalized);
           setShareUrl(slug ? buildShortShareUrl(slug) : '');
+          const cardKey = slug || normalized.id;
+          try {
+            if (sessionStorage.getItem(`cardsmith_unlocked_${cardKey}`) === 'true') {
+              setUnlocked(true);
+            }
+          } catch {}
         }
       } catch (error) {
         if (active) { setLoadMessage(error.message); setCard(null); }
@@ -50,6 +60,24 @@ export default function ViewCard() {
         <p className="text-sm text-ink-400 mb-6">{loadMessage}</p>
         <Link to="/" className="text-sm font-medium px-4 py-2 rounded-lg bg-ink-900 text-white">Go to Cardsmith</Link>
       </div>
+    );
+  }
+
+  const hasWhatsApp = Boolean(getEffectiveWhatsAppNumber(card));
+  const gateActive = card.whatsappGateEnabled !== false && hasWhatsApp;
+
+  if (gateActive && !unlocked) {
+    return (
+      <WhatsAppAccessGate
+        card={card}
+        cardSlug={slug}
+        onUnlock={() => {
+          try {
+            sessionStorage.setItem(`cardsmith_unlocked_${slug || card.id}`, 'true');
+          } catch {}
+          setUnlocked(true);
+        }}
+      />
     );
   }
 
@@ -125,7 +153,7 @@ export default function ViewCard() {
         </div>
       </main>
 
-      {showQr && <QRCodeModal url={shareUrl} onClose={() => setShowQr(false)} />}
+      {showQr && <QRCodeModal url={shareUrl} card={card} onClose={() => setShowQr(false)} />}
       {showShare && <ShareModal url={shareUrl} cardName={cardName} onClose={() => setShowShare(false)} />}
     </div>
   );

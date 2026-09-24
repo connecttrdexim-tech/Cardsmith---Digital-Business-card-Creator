@@ -34,6 +34,14 @@ export const createEmptyCard = () => ({
   address: '',
   mapsUrl: '',
 
+  // WhatsApp Gate & Lead Capture
+  whatsappGateEnabled: true,
+  campaignCode: '',
+  whatsappGateNumber: '',
+  whatsappGateMessage: 'Hi {campaignCode}! I would like to view your digital business card.',
+  whatsappGateTitle: 'Connect on WhatsApp to View Card',
+  whatsappGateSubtitle: 'Send a quick WhatsApp message to unlock the business card and exchange contact details.',
+
   // Social
   linkedin: '',
   github: '',

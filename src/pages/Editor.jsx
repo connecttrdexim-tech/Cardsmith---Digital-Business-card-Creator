@@ -13,6 +13,7 @@ import {
   Check,
   Eye,
   PenLine,
+  Users,
 } from 'lucide-react';
 import { getCard, saveCard } from '../db/storage.js';
 import { createEmptyCard } from '../data/cardModel.js';
@@ -20,6 +21,7 @@ import CardForm from '../components/CardForm.jsx';
 import CardPreview from '../components/CardPreview.jsx';
 import QRCodeModal from '../components/QRCodeModal.jsx';
 import ShareModal from '../components/ShareModal.jsx';
+import LeadsModal from '../components/LeadsModal.jsx';
 import { publishCard } from '../utils/share.js';
 import { downloadVcf } from '../utils/vcf.js';
 import { downloadJson } from '../utils/jsonIO.js';
@@ -33,6 +35,7 @@ export default function Editor() {
   const [mobileTab, setMobileTab] = useState('edit');
   const [showQr, setShowQr] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showLeads, setShowLeads] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState('');
@@ -102,6 +105,14 @@ export default function Editor() {
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <button
+              type="button"
+              onClick={() => setShowLeads(true)}
+              title="View captured WhatsApp leads"
+              className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors"
+            >
+              <Users size={14} /> Leads
+            </button>
             <button title="Save immediately to this browser" onClick={saveNow} className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border border-ink-200 hover:bg-ink-50">
               <Save size={14} /> Save now
             </button>
@@ -180,8 +191,9 @@ export default function Editor() {
         </div>
       </div>
 
-      {showQr && <QRCodeModal url={shareUrl} onClose={() => setShowQr(false)} />}
+      {showQr && <QRCodeModal url={shareUrl} card={card} onClose={() => setShowQr(false)} />}
       {showShare && <ShareModal url={shareUrl} cardName={cardName} onClose={() => setShowShare(false)} />}
+      {showLeads && <LeadsModal card={card} onClose={() => setShowLeads(false)} />}
     </div>
   );
 }

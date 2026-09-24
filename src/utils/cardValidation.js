@@ -6,6 +6,7 @@ const STRING_FIELDS = [
   'emailBody', 'website', 'address', 'mapsUrl', 'linkedin', 'github', 'facebook',
   'instagram', 'twitter', 'youtube', 'telegram', 'theme', 'primaryColor',
   'accentColor', 'buttonStyle', 'font', 'layout',
+  'campaignCode', 'whatsappGateNumber', 'whatsappGateMessage', 'whatsappGateTitle', 'whatsappGateSubtitle',
 ];
 
 const text = (value) => (typeof value === 'string' ? value : '');
@@ -22,6 +23,10 @@ export function normalizeCard(input, { newId = false } = {}) {
   }
 
   card.id = newId ? crypto.randomUUID() : safeId(input.id);
+  card.whatsappGateEnabled = input.whatsappGateEnabled !== false;
+  if (!card.campaignCode) {
+    card.campaignCode = `CARD-${card.id.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase()}`;
+  }
   card.createdAt = Number.isFinite(input.createdAt) ? input.createdAt : Date.now();
   card.updatedAt = Number.isFinite(input.updatedAt) ? input.updatedAt : Date.now();
   card.layout = ['classic', 'centered', 'banner', 'split'].includes(card.layout) ? card.layout : 'classic';

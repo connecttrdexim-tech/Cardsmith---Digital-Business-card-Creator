@@ -3,6 +3,7 @@ import {
   ChevronDown,
   Building2,
   Phone,
+  MessageCircle,
   Share2,
   Palette,
   LayoutList,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 import IdentityFields from './IdentityFields.jsx';
 import ContactFields from './ContactFields.jsx';
+import WhatsAppGateSettings from './WhatsAppGateSettings.jsx';
 import SocialFields from './SocialFields.jsx';
 import DesignFields from './DesignFields.jsx';
 import SectionsEditor from './SectionsEditor.jsx';
@@ -48,6 +50,10 @@ export default function CardForm({ card, onChange }) {
 
       <Group title="Contact" icon={Phone}>
         <ContactFields card={card} set={set} />
+      </Group>
+
+      <Group title="WhatsApp Lead Gate" icon={MessageCircle}>
+        <WhatsAppGateSettings card={card} set={set} />
       </Group>
 
       <Group title="Social profiles" icon={Share2}>
