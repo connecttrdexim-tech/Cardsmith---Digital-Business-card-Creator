@@ -27,15 +27,55 @@ export function getEffectiveCampaignCode(card) {
 }
 
 /**
- * Builds the WhatsApp click-to-chat URL:
- * https://wa.me/<yourNumber>?text=Hi%20<campaign-code>
+ * Appends unlock parameter to card URL so opening from WhatsApp unlocks immediately
  */
-export function buildWhatsAppClickToChatUrl({ number, campaignCode, sessionToken = '' }) {
+export function buildUnlockedCardUrl(url) {
+  if (!url) return '';
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}unlock=1`;
+}
+
+/**
+ * Builds the WhatsApp click-to-chat URL with 2-step verification:
+ * Prefills a "Hi" message + the visitor's digital profile link with unlock=1
+ */
+export function buildWhatsAppClickToChatUrl({
+  number,
+  campaignCode = '',
+  sessionToken = '',
+  cardUrl = '',
+  card = null,
+}) {
   const cleanNumber = cleanWhatsAppNumber(number);
-  let message = `Hi ${campaignCode}`;
+  if (!cleanNumber) return '';
+
+  const unlockedUrl = cardUrl ? buildUnlockedCardUrl(cardUrl) : '';
+  const code = campaignCode || (card ? getEffectiveCampaignCode(card) : '');
+
+  let message = '';
+  if (card?.whatsappGateMessage && card.whatsappGateMessage.trim()) {
+    message = card.whatsappGateMessage.trim();
+    if (code) {
+      message = message.replace(/{campaignCode}/g, code);
+    }
+    if (unlockedUrl && message.includes('{link}')) {
+      message = message.replace(/{link}/g, unlockedUrl);
+    } else if (unlockedUrl) {
+      message = `${message}\n\n👉 View Digital Profile: ${unlockedUrl}`;
+    }
+  } else {
+    const greeting = code ? `Hi ${code}!` : 'Hi!';
+    if (unlockedUrl) {
+      message = `${greeting} I would like to connect and view your digital business card.\n\n👉 Digital Profile Link: ${unlockedUrl}`;
+    } else {
+      message = `${greeting} I would like to view your digital business card.`;
+    }
+  }
+
   if (sessionToken) {
     message += ` [${sessionToken}]`;
   }
+
   return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
 }
 

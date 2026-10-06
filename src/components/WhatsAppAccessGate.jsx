@@ -37,10 +37,13 @@ export default function WhatsAppAccessGate({ card, cardSlug = '', onUnlock }) {
   const [submittingFallback, setSubmittingFallback] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
 
+  const currentCardUrl = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
   const waChatUrl = buildWhatsAppClickToChatUrl({
     number: whatsappNumber,
     campaignCode,
     sessionToken,
+    cardUrl: currentCardUrl,
+    card,
   });
 
   const cardName = card.companyName || card.ownerName || 'Business Card';
@@ -153,14 +156,11 @@ export default function WhatsAppAccessGate({ card, cardSlug = '', onUnlock }) {
           <div className="mt-5 p-4 rounded-2xl bg-ink-900/60 border border-white/10 text-left">
             <p className="text-xs font-semibold text-white/90 flex items-center gap-1.5 mb-1.5">
               <Lock size={13} className="text-brass-300" />
-              <span>Card Access Protected</span>
+              <span>2-Step WhatsApp Verification</span>
             </p>
             <p className="text-xs text-ink-200 leading-relaxed">
-              To view this digital business card, send a quick WhatsApp message with code{' '}
-              <strong className="text-brass-300 bg-brass-400/10 px-1.5 py-0.5 rounded font-mono">
-                {campaignCode}
-              </strong>
-              . This captures your contact with {owner} for a seamless connection.
+              <strong>Step 1:</strong> Send a prefilled "Hi" message to {owner} on WhatsApp.<br />
+              <strong>Step 2:</strong> Tap the card link sent in your WhatsApp chat to instantly reveal the full digital business card!
             </p>
           </div>
 

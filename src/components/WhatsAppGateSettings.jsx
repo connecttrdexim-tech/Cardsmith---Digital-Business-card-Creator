@@ -22,7 +22,7 @@ export default function WhatsAppGateSettings({ card, set }) {
   const effectiveNumber = getEffectiveWhatsAppNumber(card);
   const effectiveCode = getEffectiveCampaignCode(card);
   const waTestUrl = effectiveNumber
-    ? buildWhatsAppClickToChatUrl({ number: effectiveNumber, campaignCode: effectiveCode })
+    ? buildWhatsAppClickToChatUrl({ number: effectiveNumber, campaignCode: effectiveCode, card })
     : '';
 
   return (
@@ -36,10 +36,10 @@ export default function WhatsAppGateSettings({ card, set }) {
             </div>
             <div>
               <p className="font-display text-sm font-semibold text-ink-900">
-                WhatsApp Click-to-Chat Lead Gate
+                2-Step WhatsApp Verification & Lead Capture
               </p>
               <p className="text-xs text-ink-500">
-                Require visitors to send a WhatsApp message before viewing your card
+                Visitors send you a WhatsApp message with your profile link, then tap the link to view your card.
               </p>
             </div>
           </div>

@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import QRCode from 'react-qr-code';
-import { X, Download, Printer, MessageCircle, Globe, ShieldCheck } from 'lucide-react';
+import { X, Download, Printer, MessageCircle, Globe, ShieldCheck, Sparkles, Check } from 'lucide-react';
 import {
   getEffectiveWhatsAppNumber,
   getEffectiveCampaignCode,
+  buildWhatsAppClickToChatUrl,
 } from '../utils/whatsappGate.js';
 
 export default function QRCodeModal({ url, card = {}, onClose }) {
@@ -13,9 +14,14 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
   const campaignCode = getEffectiveCampaignCode(card);
   const hasWhatsApp = Boolean(whatsappNumber);
 
-  // The QR encodes https://wa.me/<yourNumber>?text=Hi%20<campaign-code>
+  // The QR encodes WhatsApp click-to-chat with pre-filled message + digital profile link
   const waQrUrl = hasWhatsApp
-    ? `https://wa.me/${whatsappNumber}?text=Hi%20${encodeURIComponent(campaignCode)}`
+    ? buildWhatsAppClickToChatUrl({
+        number: whatsappNumber,
+        campaignCode,
+        cardUrl: url,
+        card,
+      })
     : '';
 
   const [mode, setMode] = useState(hasWhatsApp ? 'whatsapp' : 'card');
@@ -54,7 +60,7 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
       <html><body style="margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;">
         <h2 style="margin-bottom:8px;">${card.ownerName || card.companyName || 'Business Card'}</h2>
         <p style="margin-top:0;font-size:13px;color:#666;">
-          ${mode === 'whatsapp' ? `Scan to connect on WhatsApp (Code: ${campaignCode})` : 'Scan to view digital business card'}
+          ${mode === 'whatsapp' ? `Scan to exchange contacts on WhatsApp & view profile` : 'Scan to view digital business card'}
         </p>
         ${wrapRef.current.innerHTML}
       </body></html>
@@ -81,7 +87,7 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
           Share via QR Code
         </h3>
         <p className="text-xs text-ink-400 text-center mb-4">
-          Choose which action the QR code triggers when scanned
+          Choose how visitors interact when scanning your QR code
         </p>
 
         {/* Mode selector if WhatsApp is configured */}
@@ -97,7 +103,7 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
               }`}
             >
               <MessageCircle size={14} fill={mode === 'whatsapp' ? 'currentColor' : 'none'} />
-              <span>WhatsApp Lead QR</span>
+              <span>2-Step WhatsApp QR</span>
             </button>
             <button
               type="button"
@@ -109,7 +115,7 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
               }`}
             >
               <Globe size={14} />
-              <span>Card URL QR</span>
+              <span>Direct URL QR</span>
             </button>
           </div>
         )}
@@ -126,24 +132,28 @@ export default function QRCodeModal({ url, card = {}, onClose }) {
           </div>
 
           {/* Description banner */}
-          <div className="w-full mt-3 p-2.5 rounded-xl bg-ink-50 border border-ink-100 text-center text-xs text-ink-600">
+          <div className="w-full mt-3 p-3 rounded-xl bg-ink-50 border border-ink-100 text-left text-xs text-ink-600">
             {mode === 'whatsapp' ? (
-              <div>
-                <p className="font-semibold text-emerald-700 flex items-center justify-center gap-1">
-                  <ShieldCheck size={13} /> Encodes WhatsApp Click-to-Chat
+              <div className="space-y-1.5">
+                <p className="font-semibold text-emerald-700 flex items-center gap-1">
+                  <ShieldCheck size={14} /> 2-Step WhatsApp Contact Exchange
                 </p>
-                <p className="text-[11px] text-ink-400 mt-0.5 truncate font-mono">
-                  https://wa.me/{whatsappNumber}?text=Hi%20{campaignCode}
-                </p>
-                <p className="text-[11px] text-ink-500 mt-1">
-                  Scanning opens WhatsApp to send <strong>Hi {campaignCode}</strong>, capturing their number.
-                </p>
+                <ol className="text-[11px] text-ink-600 list-decimal list-inside space-y-1">
+                  <li>
+                    Scanning redirects to WhatsApp to send <strong>"Hi"</strong> + your profile link.
+                  </li>
+                  <li>
+                    You receive their phone number; they tap the link in chat to view your card.
+                  </li>
+                </ol>
               </div>
             ) : (
               <div>
-                <p className="font-semibold text-ink-800">Encodes Card URL</p>
-                <p className="text-[11px] text-ink-400 mt-0.5">
-                  Opens the card webpage (visitors complete the WhatsApp step before view).
+                <p className="font-semibold text-ink-800 flex items-center gap-1">
+                  <Globe size={13} /> Direct Card URL
+                </p>
+                <p className="text-[11px] text-ink-500 mt-0.5">
+                  Scanning opens your card directly in their web browser.
                 </p>
               </div>
             )}

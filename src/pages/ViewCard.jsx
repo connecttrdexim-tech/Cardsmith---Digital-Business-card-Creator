@@ -36,8 +36,22 @@ export default function ViewCard() {
           setCard(normalized);
           setShareUrl(slug ? buildShortShareUrl(slug) : '');
           const cardKey = slug || normalized.id;
+
+          // Check if visitor arrived with unlock token or parameter from WhatsApp message link
+          const searchParams = new URLSearchParams(window.location.search);
+          const hashParts = window.location.hash.split('?');
+          const hashParams = hashParts.length > 1 ? new URLSearchParams(hashParts[1]) : null;
+          const isUrlUnlocked =
+            searchParams.get('unlock') === '1' ||
+            searchParams.get('ref') === 'wa' ||
+            searchParams.get('verified') === 'true' ||
+            hashParams?.get('unlock') === '1' ||
+            hashParams?.get('ref') === 'wa' ||
+            hashParams?.get('verified') === 'true';
+
           try {
-            if (sessionStorage.getItem(`cardsmith_unlocked_${cardKey}`) === 'true') {
+            if (isUrlUnlocked || sessionStorage.getItem(`cardsmith_unlocked_${cardKey}`) === 'true') {
+              sessionStorage.setItem(`cardsmith_unlocked_${cardKey}`, 'true');
               setUnlocked(true);
             }
           } catch {}
