@@ -4,7 +4,19 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 // New shares are published through the API and use short /c/:slug routes.
 
 export function encodeCardToParam(card) {
-  const json = JSON.stringify(card);
+  if (!card) return '';
+  // Truncate large embedded base64 data to keep URL within safe QR and browser limits (< 2000 chars)
+  const compact = { ...card };
+  if (compact.profilePicture && compact.profilePicture.startsWith('data:') && compact.profilePicture.length > 1500) {
+    compact.profilePicture = '';
+  }
+  if (compact.logo && compact.logo.startsWith('data:') && compact.logo.length > 1500) {
+    compact.logo = '';
+  }
+  if (Array.isArray(compact.gallery)) {
+    compact.gallery = compact.gallery.filter((g) => !g.src?.startsWith('data:') || g.src.length < 1500);
+  }
+  const json = JSON.stringify(compact);
   return compressToEncodedURIComponent(json);
 }
 
@@ -25,7 +37,11 @@ export function buildShareUrl(card) {
 
 function publicBaseUrl() {
   const configured = import.meta.env.VITE_PUBLIC_APP_URL?.trim();
-  return (configured || `${window.location.origin}${window.location.pathname}`).replace(/\/$/, '');
+  if (configured) return configured.replace(/\/$/, '');
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/$/, '');
+  }
+  return '';
 }
 
 export function buildShortShareUrl(slug) {
